@@ -1,0 +1,49 @@
+package com.ecommerce.productservice.service;
+
+import com.ecommerce.productservice.dto.ProductDto;
+import com.ecommerce.productservice.dto.ProductRequest;
+import com.ecommerce.productservice.entity.Product;
+import com.ecommerce.productservice.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ProductService {
+
+    private final ProductRepository productRepository;
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "products")
+    public List<ProductDto> getAllProducts() {
+        return productRepository.findAll().stream()
+                .map(p -> new ProductDto(p.getId(), p.getName(), p.getDescription(), p.getPrice(), p.getInventory()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "product", key = "#id")
+    public ProductDto getProductById(Long id) {
+        Product p = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return new ProductDto(p.getId(), p.getName(), p.getDescription(), p.getPrice(), p.getInventory());
+    }
+
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public ProductDto createProduct(ProductRequest request) {
+        Product product = Product.builder()
+                .name(request.name())
+                .description(request.description())
+                .price(request.price())
+                .inventory(request.inventory())
+                .build();
+        Product saved = productRepository.save(product);
+        return new ProductDto(saved.getId(), saved.getName(), saved.getDescription(), saved.getPrice(), saved.getInventory());
+    }
+}
