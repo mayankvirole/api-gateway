@@ -4,7 +4,6 @@ import com.ecommerce.productservice.dto.ProductDto;
 import com.ecommerce.productservice.dto.ProductRequest;
 import com.ecommerce.productservice.entity.Product;
 import com.ecommerce.productservice.repository.ProductRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -13,10 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository productRepository;
+
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     @Transactional(readOnly = true)
     @Cacheable(value = "products")
@@ -37,12 +39,7 @@ public class ProductService {
     @Transactional
     @CacheEvict(value = "products", allEntries = true)
     public ProductDto createProduct(ProductRequest request) {
-        Product product = Product.builder()
-                .name(request.name())
-                .description(request.description())
-                .price(request.price())
-                .inventory(request.inventory())
-                .build();
+        Product product = new Product(request.name(), request.description(), request.price(), request.inventory());
         Product saved = productRepository.save(product);
         return new ProductDto(saved.getId(), saved.getName(), saved.getDescription(), saved.getPrice(), saved.getInventory());
     }

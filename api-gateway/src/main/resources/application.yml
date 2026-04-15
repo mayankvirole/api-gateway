@@ -1,5 +1,41 @@
+server:
+  port: 8080
 spring:
   application:
     name: api-gateway
-server:
-  port: 8080 # To be configured later
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+resilience4j.circuitbreaker:
+  instances:
+    ecommerceCircuitBreaker:
+      slidingWindowSize: 10
+      permittedNumberOfCallsInHalfOpenState: 5
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10000
+      registerHealthIndicator: true
+
+resilience4j.retry:
+  instances:
+    ecommerceRetry:
+      maxAttempts: 3
+      waitDuration: 2000
+
+spring.cloud.gateway.default-filters:
+  - name: Retry
+    args:
+      retries: 3
+      methods: GET,POST
+      backoff:
+        firstBackoff: 500ms
+        maxBackoff: 2000ms
+        factor: 2
+        basedOnPreviousValue: false

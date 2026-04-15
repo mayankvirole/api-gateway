@@ -7,7 +7,6 @@ import com.ecommerce.orderservice.entity.Order;
 import com.ecommerce.orderservice.entity.OrderLineItem;
 import com.ecommerce.orderservice.event.OrderPlacedEvent;
 import com.ecommerce.orderservice.repository.OrderRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,11 +16,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    public OrderService(OrderRepository orderRepository, KafkaTemplate<String, Object> kafkaTemplate) {
+        this.orderRepository = orderRepository;
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     @Transactional
     public OrderResponse placeOrder(OrderRequest orderRequest) {
