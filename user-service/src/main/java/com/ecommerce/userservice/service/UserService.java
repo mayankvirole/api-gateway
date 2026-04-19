@@ -4,6 +4,7 @@ import com.ecommerce.userservice.dto.*;
 import com.ecommerce.userservice.entity.User;
 import com.ecommerce.userservice.repository.UserRepository;
 import com.ecommerce.userservice.security.JwtUtil;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ public class UserService {
 
     public UserDto register(RegisterRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new IllegalArgumentException("Email already exists");
         }
         User user = new User(request.email(), passwordEncoder.encode(request.password()), request.name(), "USER");
         User saved = userRepository.save(user);
@@ -31,13 +32,20 @@ public class UserService {
 
     public AuthResponse login(AuthRequest request) {
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
         
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new BadCredentialsException("Invalid credentials");
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        return new AuthResponse(token);
+        UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getName(), user.getRole());
+        return new AuthResponse(token, "Bearer", jwtUtil.getExpirationTime(), userDto);
+    }
+
+    public UserDto getUserProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
+        return new UserDto(user.getId(), user.getEmail(), user.getName(), user.getRole());
     }
 }
