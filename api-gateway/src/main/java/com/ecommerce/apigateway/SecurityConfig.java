@@ -17,11 +17,11 @@ public class SecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers(
-                    "/user-service/api/users/register",
-                    "/user-service/api/users/login",
-                    "/user-service/v3/api-docs/**",
-                    "/user-service/swagger-ui/**",
-                    "/user-service/swagger-ui.html"
+                    "/api/users/register",
+                    "/api/users/login",
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
                 ).permitAll()
                 .anyExchange().authenticated()
             )

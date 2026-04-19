@@ -5,9 +5,35 @@ spring:
     name: api-gateway
   cloud:
     gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**, /v3/api-docs/user-service/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ecommerceCircuitBreaker
+                fallbackUri: forward:/fallback
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/api/products/**, /v3/api-docs/product-service/**
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/orders/**, /v3/api-docs/order-service/**
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/payments/**, /v3/api-docs/payment-service/**
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**, /v3/api-docs/notification-service/**
       discovery:
         locator:
-          enabled: true
+          enabled: false # Explicit routes preferred
           lower-case-service-id: true
 
 jwt:

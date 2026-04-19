@@ -7,6 +7,8 @@ import com.ecommerce.orderservice.entity.Order;
 import com.ecommerce.orderservice.entity.OrderLineItem;
 import com.ecommerce.orderservice.event.OrderPlacedEvent;
 import com.ecommerce.orderservice.repository.OrderRepository;
+import com.ecommerce.orderservice.client.ProductClient;
+import com.ecommerce.orderservice.dto.ProductDto;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +22,12 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ProductClient productClient;
 
-    public OrderService(OrderRepository orderRepository, KafkaTemplate<String, Object> kafkaTemplate) {
+    public OrderService(OrderRepository orderRepository, KafkaTemplate<String, Object> kafkaTemplate, ProductClient productClient) {
         this.orderRepository = orderRepository;
         this.kafkaTemplate = kafkaTemplate;
+        this.productClient = productClient;
     }
 
     @Transactional
@@ -35,9 +39,14 @@ public class OrderService {
         List<OrderLineItem> lineItems = orderRequest.orderLineItems()
                 .stream()
                 .map(itemDto -> {
+                    ProductDto product = productClient.getProductById(itemDto.productId());
+                    if (product.inventory() < itemDto.quantity()) {
+                        throw new IllegalArgumentException("Not enough inventory for product: " + product.name());
+                    }
+
                     OrderLineItem item = new OrderLineItem();
-                    item.setProductId(itemDto.productId());
-                    item.setPrice(itemDto.price());
+                    item.setProductId(product.id());
+                    item.setPrice(product.price());
                     item.setQuantity(itemDto.quantity());
                     item.setOrder(order);
                     return item;

@@ -7,4 +7,4 @@ public record ProductDto(
     String description,
     BigDecimal price,
     Integer inventory
-) {}
+) implements java.io.Serializable {}
