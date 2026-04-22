@@ -9,6 +9,7 @@ import com.ecommerce.orderservice.event.OrderPlacedEvent;
 import com.ecommerce.orderservice.repository.OrderRepository;
 import com.ecommerce.orderservice.client.ProductClient;
 import com.ecommerce.orderservice.dto.ProductDto;
+import com.ecommerce.orderservice.dto.InventoryUpdateRequest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,6 +61,11 @@ public class OrderService {
         order.setTotalPrice(total);
 
         Order savedOrder = orderRepository.save(order);
+
+        // Update product inventories
+        for (OrderLineItem item : lineItems) {
+            productClient.updateInventory(item.getProductId(), new InventoryUpdateRequest(-item.getQuantity()));
+        }
 
         // Send Domain Event to Kafka
         OrderPlacedEvent event = new OrderPlacedEvent(savedOrder.getId(), savedOrder.getUserId(), savedOrder.getTotalPrice(), savedOrder.getOrderStatus());

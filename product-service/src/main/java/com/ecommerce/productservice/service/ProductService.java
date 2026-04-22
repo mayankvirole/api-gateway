@@ -43,4 +43,17 @@ public class ProductService {
         Product saved = productRepository.save(product);
         return new ProductDto(saved.getId(), saved.getName(), saved.getDescription(), saved.getPrice(), saved.getInventory());
     }
+
+    @Transactional
+    @CacheEvict(value = {"products", "product"}, key = "#id")
+    public void updateInventory(Long id, int quantityChange) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        int newInventory = product.getInventory() + quantityChange;
+        if (newInventory < 0) {
+            throw new IllegalArgumentException("Insufficient inventory");
+        }
+        product.setInventory(newInventory);
+        productRepository.save(product);
+    }
 }
