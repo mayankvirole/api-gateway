@@ -19,25 +19,45 @@ spring:
           uri: lb://product-service
           predicates:
             - Path=/api/v1/products/**, /v3/api-docs/product-service/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: productServiceCircuitBreaker
+                fallbackUri: forward:/fallback
         - id: order-service
           uri: lb://order-service
           predicates:
             - Path=/api/v1/orders/**, /v3/api-docs/order-service/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: orderServiceCircuitBreaker
+                fallbackUri: forward:/fallback
         - id: payment-service
           uri: lb://payment-service
           predicates:
             - Path=/api/v1/payments/**, /v3/api-docs/payment-service/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: paymentServiceCircuitBreaker
+                fallbackUri: forward:/fallback
         - id: notification-service
           uri: lb://notification-service
           predicates:
             - Path=/api/v1/notifications/**, /v3/api-docs/notification-service/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notificationServiceCircuitBreaker
+                fallbackUri: forward:/fallback
       discovery:
         locator:
           enabled: false # Explicit routes preferred
           lower-case-service-id: true
 
 jwt:
-  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  secret: ${JWT_SECRET}
 
 eureka:
   client:
@@ -57,19 +77,38 @@ management:
         include: health, info, prometheus, tracing
 
 resilience4j.circuitbreaker:
+  configs:
+    default:
+      slidingWindowSize: 10
+      minimumNumberOfCalls: 5
+      permittedNumberOfCallsInHalfOpenState: 3
+      failureRateThreshold: 50
+      slowCallRateThreshold: 50
+      slowCallDurationThreshold: 3s
+      waitDurationInOpenState: 10s
+      registerHealthIndicator: true
   instances:
     ecommerceCircuitBreaker:
-      slidingWindowSize: 10
-      permittedNumberOfCallsInHalfOpenState: 5
-      failureRateThreshold: 50
-      waitDurationInOpenState: 10000
-      registerHealthIndicator: true
+      baseConfig: default
+    productServiceCircuitBreaker:
+      baseConfig: default
+    orderServiceCircuitBreaker:
+      baseConfig: default
+    paymentServiceCircuitBreaker:
+      baseConfig: default
+    notificationServiceCircuitBreaker:
+      baseConfig: default
 
 resilience4j.retry:
+  configs:
+    default:
+      maxAttempts: 3
+      waitDuration: 500ms
+      enableExponentialBackoff: true
+      exponentialBackoffMultiplier: 2
   instances:
     ecommerceRetry:
-      maxAttempts: 3
-      waitDuration: 2000
+      baseConfig: default
 
 spring.cloud.gateway.default-filters:
   - name: Retry

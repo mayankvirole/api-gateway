@@ -38,11 +38,25 @@ cd project
 
 ## Configuration
 
-The application has sensible local defaults, but these environment variables can be overridden on any system:
+Runtime secrets and deployment-specific values are loaded from environment variables. For Docker Compose, create a local `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+Then replace `JWT_SECRET` in `.env` with a real 256-bit Base64 secret:
+
+```bash
+openssl rand -base64 32
+```
+
+The real `.env` file is gitignored. Keep `.env.example` committed as a setup template only.
+
+These values can be overridden on any system:
 
 | Variable | Default |
 | --- | --- |
-| `JWT_SECRET` | `404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970` |
+| `JWT_SECRET` | Required in `.env` or environment |
 | `JWT_EXPIRATION` | `86400000` |
 | `DB_USERNAME` | `root` |
 | `DB_PASSWORD` | `password` |
@@ -65,6 +79,7 @@ PostgreSQL schemas are created by `infrastructure/postgres/init-db.sql`:
 Build the jars first. The service Dockerfiles copy `target/*.jar`, so this step is required before `docker compose up`.
 
 ```bash
+cp .env.example .env
 mvn clean package
 docker compose up --build
 ```
@@ -222,4 +237,11 @@ If database migrations fail after schema changes during development, reset local
 ```bash
 docker compose down -v
 docker compose up --build
+```
+
+If Compose fails with `JWT_SECRET must be set in .env`, create `.env` from the template and set a real value:
+
+```bash
+cp .env.example .env
+openssl rand -base64 32
 ```
