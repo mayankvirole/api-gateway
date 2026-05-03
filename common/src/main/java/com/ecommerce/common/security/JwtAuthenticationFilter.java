@@ -1,4 +1,4 @@
-package com.ecommerce.userservice.security;
+package com.ecommerce.common.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,6 +14,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * JWT Authentication Filter for extracting and validating JWT tokens from requests.
+ * Can be shared across all microservices.
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 

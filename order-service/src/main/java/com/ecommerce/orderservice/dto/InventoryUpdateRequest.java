@@ -1,4 +1,6 @@
 package com.ecommerce.orderservice.dto;
 
-public record InventoryUpdateRequest(int quantityChange) {
+import jakarta.validation.constraints.NotNull;
+
+public record InventoryUpdateRequest(@NotNull Integer quantityChange) {
 }

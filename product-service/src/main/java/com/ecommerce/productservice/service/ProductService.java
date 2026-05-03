@@ -1,5 +1,7 @@
 package com.ecommerce.productservice.service;
 
+import com.ecommerce.common.exception.InsufficientInventoryException;
+import com.ecommerce.common.exception.ProductNotFoundException;
 import com.ecommerce.productservice.dto.ProductDto;
 import com.ecommerce.productservice.dto.ProductRequest;
 import com.ecommerce.productservice.entity.Product;
@@ -32,7 +34,7 @@ public class ProductService {
     @Cacheable(value = "product", key = "#id")
     public ProductDto getProductById(Long id) {
         Product p = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
         return new ProductDto(p.getId(), p.getName(), p.getDescription(), p.getPrice(), p.getInventory());
     }
 
@@ -48,10 +50,10 @@ public class ProductService {
     @CacheEvict(value = {"products", "product"}, key = "#id")
     public void updateInventory(Long id, int quantityChange) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + id));
         int newInventory = product.getInventory() + quantityChange;
         if (newInventory < 0) {
-            throw new IllegalArgumentException("Insufficient inventory");
+            throw new InsufficientInventoryException("Insufficient inventory for product id: " + id);
         }
         product.setInventory(newInventory);
         productRepository.save(product);

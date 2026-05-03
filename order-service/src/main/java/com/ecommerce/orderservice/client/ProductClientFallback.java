@@ -1,5 +1,6 @@
 package com.ecommerce.orderservice.client;
 
+import com.ecommerce.common.dto.ApiResponse;
 import com.ecommerce.orderservice.dto.ProductDto;
 import com.ecommerce.orderservice.dto.InventoryUpdateRequest;
 import org.springframework.stereotype.Component;
@@ -8,9 +9,9 @@ import java.math.BigDecimal;
 @Component
 public class ProductClientFallback implements ProductClient {
     @Override
-    public ProductDto getProductById(Long id) {
+    public ApiResponse<ProductDto> getProductById(Long id) {
         // Return a default or "unavailable" product response
-        return new ProductDto(id, "Service Unavailable", "Product service is currently down", BigDecimal.ZERO, 0);
+        return ApiResponse.success(new ProductDto(id, "Service Unavailable", "Product service is currently down", BigDecimal.ZERO, 0));
     }
 
     @Override

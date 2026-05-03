@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.ecommerce")
 @EnableMethodSecurity
 public class ProductServiceApplication {
     public static void main(String[] args) {

@@ -1,6 +1,6 @@
 package com.ecommerce.notificationservice.service;
+import com.ecommerce.common.event.PaymentProcessedEvent;
 import com.ecommerce.notificationservice.entity.NotificationLog;
-import com.ecommerce.notificationservice.event.PaymentProcessedEvent;
 import com.ecommerce.notificationservice.repository.NotificationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,10 @@ public class NotificationService {
     public void consumePaymentEvent(PaymentProcessedEvent event) {
         log.info("Received Payment Event for Order ID: {} with Status: {}", event.getOrderId(), event.getStatus());
         
-        NotificationLog notification = new NotificationLog(event.getOrderId(), "Your order has been placed and payment is " + event.getStatus(), LocalDateTime.now());
+        String message = "SUCCESS".equals(event.getStatus())
+                ? "Your order has been placed and payment is SUCCESS"
+                : "Your order payment failed. Reason: " + event.getFailureReason();
+        NotificationLog notification = new NotificationLog(event.getOrderId(), message, LocalDateTime.now());
         notificationRepository.save(notification);
         
         log.info("Email simulated and recorded in notification_logs database.");

@@ -1,9 +1,11 @@
 package com.ecommerce.userservice.service;
 
+import com.ecommerce.common.exception.BusinessException;
+import com.ecommerce.common.exception.UserNotFoundException;
+import com.ecommerce.common.security.JwtUtil;
 import com.ecommerce.userservice.dto.*;
 import com.ecommerce.userservice.entity.User;
 import com.ecommerce.userservice.repository.UserRepository;
-import com.ecommerce.userservice.security.JwtUtil;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,7 @@ public class UserService {
 
     public UserDto register(RegisterRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new BusinessException("EMAIL_ALREADY_EXISTS", "Email already exists");
         }
         User user = new User(request.email(), passwordEncoder.encode(request.password()), request.name(), "USER");
         User saved = userRepository.save(user);
@@ -45,7 +47,7 @@ public class UserService {
 
     public UserDto getUserProfile(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BadCredentialsException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found for email: " + email));
         return new UserDto(user.getId(), user.getEmail(), user.getName(), user.getRole());
     }
 }

@@ -1,11 +1,12 @@
 package com.ecommerce.userservice.service;
 
+import com.ecommerce.common.exception.BusinessException;
+import com.ecommerce.common.security.JwtUtil;
 import com.ecommerce.userservice.dto.AuthRequest;
 import com.ecommerce.userservice.dto.AuthResponse;
 import com.ecommerce.userservice.dto.RegisterRequest;
 import com.ecommerce.userservice.entity.User;
 import com.ecommerce.userservice.repository.UserRepository;
-import com.ecommerce.userservice.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +53,7 @@ public class UserServiceTest {
     void testRegister_ExistingEmailThrowsException() {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(new User()));
         
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(BusinessException.class, () -> {
             userService.register(request);
         });
         
