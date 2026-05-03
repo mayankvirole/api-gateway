@@ -17,6 +17,8 @@ Spring Boot microservices backend with Eureka service discovery, Spring Cloud Ga
 | Kafka | 9092 | Event bus |
 | Redis | 6379 | Product cache |
 | Zipkin | 9411 | Distributed trace UI |
+| Prometheus | 9090 | Metrics collection |
+| Grafana | 3000 | Metrics dashboards |
 
 ## Prerequisites
 
@@ -65,6 +67,8 @@ These values can be overridden on any system:
 | `REDIS_HOST` | `localhost` |
 | `REDIS_PORT` | `6379` |
 | `PAYMENTS_MAX_AUTO_APPROVAL_AMOUNT` | `1000000` |
+| `GRAFANA_ADMIN_USER` | `admin` |
+| `GRAFANA_ADMIN_PASSWORD` | `admin` |
 
 PostgreSQL schemas are created by `infrastructure/postgres/init-db.sql`:
 
@@ -135,11 +139,15 @@ If running services locally while infrastructure is in Docker, the default `loca
 - Gateway: `http://localhost:8080`
 - Eureka dashboard: `http://localhost:8761`
 - Zipkin dashboard: `http://localhost:9411`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
 - User service health: `http://localhost:8081/actuator/health`
 - Product service health: `http://localhost:8082/actuator/health`
 - Order service health: `http://localhost:8083/actuator/health`
 - Payment service health: `http://localhost:8084/actuator/health`
 - Notification service health: `http://localhost:8085/actuator/health`
+
+Grafana is provisioned with Prometheus as the default datasource and includes a starter dashboard named `Spring Boot Services Overview`. The default local login is `admin` / `admin` unless changed in `.env`.
 
 Swagger/OpenAPI UI is available on services that include SpringDoc:
 
